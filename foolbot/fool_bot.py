@@ -60,4 +60,6 @@ class FoolBot(commands.Bot):
             log.info('[{}#{}@{}] {}'.format(message.server, message.channel, message.author, message.content))
             content = message.content + ' ' + random_boop()
             await self.send_message(message.channel, content)
+            for attachment in message.attachments:
+                await self.send_message(message.channel, attachment.get('url'))
             await self.delete_message(message)
