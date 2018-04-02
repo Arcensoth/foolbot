@@ -1,8 +1,9 @@
-import random
 import logging
+import random
 import requests
-from discord import Message, User, Server, Member
+from discord import Message, Server, User
 from discord.ext import commands
+from io import BytesIO
 
 log = logging.getLogger(__name__)
 
@@ -61,5 +62,14 @@ class FoolBot(commands.Bot):
             content = message.content + ' ' + random_boop()
             await self.send_message(message.channel, content)
             for attachment in message.attachments:
-                await self.send_message(message.channel, attachment.get('url'))
+                attachment_url = attachment.get('url')
+                attachment_filename = attachment.get('filename')
+                log.info('Found attachment: {}'.format(attachment_filename))
+                try:
+                    attachment_response = requests.get(attachment_url)
+                    attachment_fp = BytesIO(attachment_response.content)
+                    await self.send_file(message.channel, attachment_fp, filename=attachment_filename)
+                except:
+                    log.exception('Failed to send attachment: {}'.format(attachment_filename))
+                    await self.send_message(message.channel, attachment_url)
             await self.delete_message(message)
